@@ -45,7 +45,7 @@
  
 /*** Functions ***/
 void ProcessingUnitInitialize(SubArray *& subArray, InputParameter& inputParameter, Technology& tech, MemCell& cell, int _numSubArrayRowNM, int _numSubArrayColNM, int _numSubArrayRowCM, int _numSubArrayColCM);
-vector<double> ProcessingUnitCalculateArea(SubArray *subArray, int numSubArrayRow, int numSubArrayCol, bool NMpe, double *height, double *width, double *bufferArea);
+vector<double> ProcessingUnitCalculateArea(SubArray *subArray, int numSubArrayRow, int numSubArrayCol, int numChannels, bool NMpe, double *height, double *width, double *bufferArea);
 double ProcessingUnitCalculatePerformance(SubArray *subArray, Technology& tech, MemCell& cell, int layerNumber, bool NMpe, 
 										const vector<vector<double> > &newMemory, const vector<vector<double> > &oldMemory, const vector<vector<double> > &inputVector, 
 										int arrayDupRow, int arrayDupCol, int numSubArrayRow, int numSubArrayCol, int weightMatrixRow, int weightMatrixCol, 
@@ -54,7 +54,7 @@ double ProcessingUnitCalculatePerformance(SubArray *subArray, Technology& tech, 
 										double *bufferLatency, double *bufferDynamicEnergy, double *icLatency, double *icDynamicEnergy,
 										double *coreLatencyADC, double *coreLatencyAccum, double *coreLatencyOther, double *coreEnergyADC, 
 										double *coreEnergyAccum, double *coreEnergyOther, double *readLatencyPeakFW, double *readDynamicEnergyPeakFW,
-										double *readLatencyPeakAG, double *readDynamicEnergyPeakAG, double *readLatencyPeakWU, double *readDynamicEnergyPeakWU);
+										double *readLatencyPeakAG, double *readDynamicEnergyPeakAG, double *readLatencyPeakWU, double *readDynamicEnergyPeakWU, int numChannels);
 
 vector<vector<double> > CopySubArray(const vector<vector<double> > &orginal, int positionRow, int positionCol, int numRow, int numCol);
 vector<vector<double> > CopySubInput(const vector<vector<double> > &orginal, int positionRow, int numInputVector, int numRow);

@@ -53,7 +53,7 @@ using namespace std;
 
 /*** Functions ***/
 void TileInitialize(InputParameter& inputParameter, Technology& tech, MemCell& cell, double _numPENM, double _peSizeNM, double _numPECM, double _peSizeCM);
-vector<double> TileCalculateArea(double numPE, double peSize, bool NMTile, double *height, double *width);
+vector<double> TileCalculateArea(double numPE, double peSize, bool NMTile, double *height, double *width, int numChannels);
 void TileCalculatePerformance(const vector<vector<double> > &newMemory, const vector<vector<double> > &oldMemory, const vector<vector<double> > &inputVector, 
 			int novelMap, int layerNumber, double numPE, double peSize, 
 			int speedUpRow, int speedUpCol, int weightMatrixRow, int weightMatrixCol, int numInVector, 
@@ -62,7 +62,7 @@ void TileCalculatePerformance(const vector<vector<double> > &newMemory, const ve
 			double *bufferLatency, double *bufferDynamicEnergy, double *icLatency, double *icDynamicEnergy,
 			double *coreLatencyADC, double *coreLatencyAccum, double *coreLatencyOther, double *coreEnergyADC, 
 			double *coreEnergyAccum, double *coreEnergyOther, double *readLatencyPeakFW, double *readDynamicEnergyPeakFW,
-			double *readLatencyPeakAG, double *readDynamicEnergyPeakAG, double *writeLatencyPeakWU, double *writeDynamicEnergyPeakWU);
+			double *readLatencyPeakAG, double *readDynamicEnergyPeakAG, double *writeLatencyPeakWU, double *writeDynamicEnergyPeakWU, int numChannels);
 		
 vector<vector<double> > CopyPEArray(const vector<vector<double> > &orginal, int positionRow, int positionCol, int numRow, int numCol);
 vector<vector<double> > CopyPEInput(const vector<vector<double> > &orginal, int positionRow, int numInputVector, int numRow);

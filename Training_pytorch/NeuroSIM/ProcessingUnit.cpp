@@ -156,6 +156,7 @@ void ProcessingUnitInitialize(SubArray *& subArray, InputParameter& inputParamet
 	subArray->parallelBP = param->parallelBP;	
 	subArray->numRow = param->numRowSubArray;
 	subArray->numCol = param->numRowSubArray;
+	subArray->numChannels = param->numChannels;
 	subArray->levelOutput = param->levelOutput;
 	subArray->levelOutputBP = param->levelOutputAG;
 	subArray->numColMuxed = param->numColMuxed;               // How many columns share 1 read circuit (for neuro mode with analog RRAM) or 1 S/A (for memory mode or neuro mode with digital RRAM)
@@ -193,7 +194,7 @@ void ProcessingUnitInitialize(SubArray *& subArray, InputParameter& inputParamet
 	int numSubArrayColCM = _numSubArrayColCM;
 	
 	/*** initialize modules ***/
-	subArray->Initialize(numRow, numCol, param->unitLengthWireResistance);        // initialize subArray
+	subArray->Initialize(numRow, numCol, param->unitLengthWireResistance, param->numChannels);        // initialize subArray
 	subArray->CalculateArea();
 	
 	if (param->novelMapping) {
@@ -231,7 +232,7 @@ void ProcessingUnitInitialize(SubArray *& subArray, InputParameter& inputParamet
 }
 
 
-vector<double> ProcessingUnitCalculateArea(SubArray *subArray, int numSubArrayRow, int numSubArrayCol, bool NMpe, double *height, double *width, double *bufferArea) {
+vector<double> ProcessingUnitCalculateArea(SubArray *subArray, int numSubArrayRow, int numSubArrayCol, int numChannels, bool NMpe, double *height, double *width, double *bufferArea) {
 	vector<double> areaResults;
 	*height = 0;
 	*width = 0;
@@ -246,16 +247,17 @@ vector<double> ProcessingUnitCalculateArea(SubArray *subArray, int numSubArrayRo
 		
 		busInputNM->CalculateArea(1, true); 
 		busOutputNM->CalculateArea(1, true);	
-		area += subArray->usedArea * (numSubArrayRow*numSubArrayCol) + adderTreeNM->area + bufferInputNM->area + bufferOutputNM->area;
+		// area += subArray->usedArea * (numSubArrayRow*numSubArrayCol) + adderTreeNM->area + bufferInputNM->area + bufferOutputNM->area;
+		area += subArray->usedArea * (numSubArrayRow*numSubArrayCol) *numChannels + adderTreeNM->area*numChannels + bufferInputNM->area*numChannels + bufferOutputNM->area*numChannels;
 		
 		*height = sqrt(area);
 		*width = area/(*height);
 		
 		areaResults.push_back(area);
-		areaResults.push_back(subArray->areaADC*(numSubArrayRow*numSubArrayCol));
-		areaResults.push_back(subArray->areaAccum*(numSubArrayRow*numSubArrayCol)+adderTreeNM->area);
-		areaResults.push_back(subArray->areaOther*(numSubArrayRow*numSubArrayCol)+ bufferInputNM->area + bufferOutputNM->area);
-		areaResults.push_back(subArray->areaArray*(numSubArrayRow*numSubArrayCol));
+		areaResults.push_back(subArray->areaADC*(numSubArrayRow*numSubArrayCol)*numChannels);
+		areaResults.push_back(subArray->areaAccum*(numSubArrayRow*numSubArrayCol)*numChannels+adderTreeNM->area*numChannels);
+		areaResults.push_back(subArray->areaOther*(numSubArrayRow*numSubArrayCol)*numChannels+ bufferInputNM->area*numChannels + bufferOutputNM->area*numChannels);
+		areaResults.push_back(subArray->areaArray*(numSubArrayRow*numSubArrayCol)*numChannels);
 	} else {
 		adderTreeCM->CalculateArea(NULL, subArray->width, NONE);
 		bufferInputCM->CalculateArea(numSubArrayRow*subArray->height, NULL, NONE);
@@ -263,16 +265,16 @@ vector<double> ProcessingUnitCalculateArea(SubArray *subArray, int numSubArrayRo
 		
 		busInputCM->CalculateArea(1, true); 
 		busOutputCM->CalculateArea(1, true);	
-		area += subArray->usedArea * (numSubArrayRow*numSubArrayCol) + adderTreeCM->area + bufferInputCM->area + bufferOutputCM->area;
+		area += subArray->usedArea * (numSubArrayRow*numSubArrayCol)*numChannels + adderTreeCM->area*numChannels + bufferInputCM->area*numChannels + bufferOutputCM->area*numChannels;
 		
 		*height = sqrt(area);
 		*width = area/(*height);
 		
 		areaResults.push_back(area);
-		areaResults.push_back(subArray->areaADC*(numSubArrayRow*numSubArrayCol));
-		areaResults.push_back(subArray->areaAccum*(numSubArrayRow*numSubArrayCol)+adderTreeCM->area);
-		areaResults.push_back(subArray->areaOther*(numSubArrayRow*numSubArrayCol)+ bufferInputCM->area + bufferOutputCM->area);
-		areaResults.push_back(subArray->areaArray*(numSubArrayRow*numSubArrayCol));
+		areaResults.push_back(subArray->areaADC*(numSubArrayRow*numSubArrayCol)*numChannels);
+		areaResults.push_back(subArray->areaAccum*(numSubArrayRow*numSubArrayCol)*numChannels+adderTreeCM->area*numChannels);
+		areaResults.push_back(subArray->areaOther*(numSubArrayRow*numSubArrayCol)*numChannels+ bufferInputCM->area*numChannels + bufferOutputCM->area*numChannels);
+		areaResults.push_back(subArray->areaArray*(numSubArrayRow*numSubArrayCol)*numChannels);
 	}
 	
 	return areaResults;
@@ -287,7 +289,7 @@ double ProcessingUnitCalculatePerformance(SubArray *subArray, Technology& tech, 
 											double *bufferLatency, double *bufferDynamicEnergy, double *icLatency, double *icDynamicEnergy,
 											double *coreLatencyADC, double *coreLatencyAccum, double *coreLatencyOther, double *coreEnergyADC, 
 											double *coreEnergyAccum, double *coreEnergyOther, double *readLatencyPeakFW, double *readDynamicEnergyPeakFW,
-											double *readLatencyPeakAG, double *readDynamicEnergyPeakAG, double *writeLatencyPeakWU, double *writeDynamicEnergyPeakWU) {
+											double *readLatencyPeakAG, double *readDynamicEnergyPeakAG, double *writeLatencyPeakWU, double *writeDynamicEnergyPeakWU, int numChannels) {
 	
 	/*** define how many subArray are used to map the whole layer ***/
 	*readLatency = 0;
@@ -385,18 +387,18 @@ double ProcessingUnitCalculatePerformance(SubArray *subArray, Technology& tech, 
 							subArray->CalculatePower(columnResistance, rowResistance);
 							
 							subArrayReadLatency += subArray->readLatency;
-							*readDynamicEnergy += subArray->readDynamicEnergy;
+							*readDynamicEnergy += subArray->readDynamicEnergy * numChannels;
 							subArrayLeakage = subArray->leakage;
 							subArrayReadLatencyAG += subArray->readLatencyAG*((param->trainingEstimation)==true? 1:0);
-							*readDynamicEnergyAG += subArray->readDynamicEnergyAG*((param->trainingEstimation)==true? 1:0);
+							*readDynamicEnergyAG += numChannels * subArray->readDynamicEnergyAG*((param->trainingEstimation)==true? 1:0);
 
 							subArrayLatencyADC += subArray->readLatencyADC;
 							subArrayLatencyAccum += subArray->readLatencyAccum;
 							subArrayLatencyOther += subArray->readLatencyOther;
 							
-							*coreEnergyADC += subArray->readDynamicEnergyADC;
-							*coreEnergyAccum += subArray->readDynamicEnergyAccum;
-							*coreEnergyOther += subArray->readDynamicEnergyOther;
+							*coreEnergyADC += subArray->readDynamicEnergyADC*numChannels;
+							*coreEnergyAccum += subArray->readDynamicEnergyAccum*numChannels;
+							*coreEnergyOther += subArray->readDynamicEnergyOther*numChannels;
 						}
 						// accumulate write latency as array need to be write sequentially (worst case)
 						// limitation by on-chip buffer, write latency will be divided by numArrayWriteParallel (real case)
@@ -407,9 +409,9 @@ double ProcessingUnitCalculatePerformance(SubArray *subArray, Technology& tech, 
 							adderTreeNM->CalculatePower((int)(numInVector/param->numBitInput)*ceil(param->numColMuxed/param->numColPerSynapse), ceil((double) weightMatrixRow/(double) param->numRowSubArray));
 							
 							*readLatency = MAX(subArrayReadLatency + adderTreeNM->readLatency, (*readLatency));
-							*readDynamicEnergy += adderTreeNM->readDynamicEnergy;
+							*readDynamicEnergy += adderTreeNM->readDynamicEnergy* numChannels;
 							*readLatencyAG = MAX(subArrayReadLatencyAG + adderTreeNM->readLatency, (*readLatencyAG));
-							*readDynamicEnergyAG += adderTreeNM->readDynamicEnergy*((param->trainingEstimation)&&(layerNumber!=0)==true? 1:0);
+							*readDynamicEnergyAG += numChannels * adderTreeNM->readDynamicEnergy*((param->trainingEstimation)&&(layerNumber!=0)==true? 1:0);
 							
 							*coreLatencyADC = MAX(subArrayLatencyADC, (*coreLatencyADC));
 							*coreLatencyAccum = MAX(subArrayLatencyAccum + adderTreeNM->readLatency, (*coreLatencyAccum));
@@ -420,9 +422,9 @@ double ProcessingUnitCalculatePerformance(SubArray *subArray, Technology& tech, 
 							adderTreeCM->CalculatePower((int)(numInVector/param->numBitInput)*ceil(param->numColMuxed/param->numColPerSynapse), ceil((double) weightMatrixRow/(double) param->numRowSubArray));
 							
 							*readLatency = MAX(subArrayReadLatency + adderTreeCM->readLatency, (*readLatency));
-							*readDynamicEnergy += adderTreeCM->readDynamicEnergy;
+							*readDynamicEnergy += adderTreeCM->readDynamicEnergy* numChannels;
 							*readLatencyAG = MAX(subArrayReadLatencyAG + adderTreeCM->readLatency, (*readLatencyAG));
-							*readDynamicEnergyAG += adderTreeCM->readDynamicEnergy*((param->trainingEstimation)&&(layerNumber!=0)==true? 1:0);
+							*readDynamicEnergyAG += numChannels * adderTreeCM->readDynamicEnergy*((param->trainingEstimation)&&(layerNumber!=0)==true? 1:0);
 							
 							*coreLatencyADC = MAX(subArrayLatencyADC, (*coreLatencyADC));
 							*coreLatencyAccum = MAX(subArrayLatencyAccum + adderTreeCM->readLatency, (*coreLatencyAccum));
@@ -497,18 +499,18 @@ double ProcessingUnitCalculatePerformance(SubArray *subArray, Technology& tech, 
 				subArray->CalculatePower(columnResistance, rowResistance);
 				
 				subArrayReadLatency += subArray->readLatency;
-				*readDynamicEnergy += subArray->readDynamicEnergy;
+				*readDynamicEnergy += subArray->readDynamicEnergy * numChannels;
 				subArrayLeakage = subArray->leakage;
 				subArrayReadLatencyAG += subArray->readLatencyAG*((param->trainingEstimation)==true? 1:0);
-				*readDynamicEnergyAG += subArray->readDynamicEnergyAG*((param->trainingEstimation)==true? 1:0);
+				*readDynamicEnergyAG += numChannels * subArray->readDynamicEnergyAG*((param->trainingEstimation)==true? 1:0);
 				
 				subArrayLatencyADC += subArray->readLatencyADC;
 				subArrayLatencyAccum += subArray->readLatencyAccum;
 				subArrayLatencyOther += subArray->readLatencyOther;
 				
-				*coreEnergyADC += subArray->readDynamicEnergyADC;
-				*coreEnergyAccum += subArray->readDynamicEnergyAccum;
-				*coreEnergyOther += subArray->readDynamicEnergyOther;
+				*coreEnergyADC += subArray->readDynamicEnergyADC*numChannels;
+				*coreEnergyAccum += subArray->readDynamicEnergyAccum*numChannels;
+				*coreEnergyOther += subArray->readDynamicEnergyOther*numChannels;
 			}
 			*writeLatencyWU += subArray->writeLatency*((param->trainingEstimation)==true? 1:0);
 			*writeDynamicEnergyWU += subArray->writeDynamicEnergy*(arrayDupRow*arrayDupCol)*((param->trainingEstimation)==true? 1:0);
@@ -582,18 +584,18 @@ double ProcessingUnitCalculatePerformance(SubArray *subArray, Technology& tech, 
 						subArray->CalculatePower(columnResistance, rowResistance);
 						
 						subArrayReadLatency += subArray->readLatency;
-						*readDynamicEnergy += subArray->readDynamicEnergy;
+						*readDynamicEnergy += subArray->readDynamicEnergy * numChannels;
 						subArrayLeakage = subArray->leakage;
 						subArrayReadLatencyAG += subArray->readLatencyAG*((param->trainingEstimation)==true? 1:0);
-						*readDynamicEnergyAG += subArray->readDynamicEnergyAG*((param->trainingEstimation)==true? 1:0);
+						*readDynamicEnergyAG += numChannels * subArray->readDynamicEnergyAG*((param->trainingEstimation)==true? 1:0);
 						
 						subArrayLatencyADC += subArray->readLatencyADC;
 						subArrayLatencyAccum += subArray->readLatencyAccum;
 						subArrayLatencyOther += subArray->readLatencyOther;
 						
-						*coreEnergyADC += subArray->readDynamicEnergyADC;
-						*coreEnergyAccum += subArray->readDynamicEnergyAccum;
-						*coreEnergyOther += subArray->readDynamicEnergyOther;
+						*coreEnergyADC += subArray->readDynamicEnergyADC*numChannels;
+						*coreEnergyAccum += subArray->readDynamicEnergyAccum*numChannels;
+						*coreEnergyOther += subArray->readDynamicEnergyOther*numChannels;
 						
 					}
 					// accumulate write latency as array need to be write sequentially (worst case)
@@ -614,8 +616,8 @@ double ProcessingUnitCalculatePerformance(SubArray *subArray, Technology& tech, 
 			*readLatency += adderTreeNM->readLatency;
 			*readLatencyAG += adderTreeNM->readLatency*((param->trainingEstimation)&&(layerNumber!=0)==true? 1:0);
 			*coreLatencyAccum += adderTreeNM->readLatency*((param->trainingEstimation)&&(layerNumber!=0)==true? 2:1);
-			*readDynamicEnergy += adderTreeNM->readDynamicEnergy;
-			*readDynamicEnergyAG += adderTreeNM->readDynamicEnergy*((param->trainingEstimation)&&(layerNumber!=0)==true? 1:0);
+			*readDynamicEnergy += adderTreeNM->readDynamicEnergy* numChannels;
+			*readDynamicEnergyAG += numChannels * adderTreeNM->readDynamicEnergy*((param->trainingEstimation)&&(layerNumber!=0)==true? 1:0);
 			*coreEnergyAccum += adderTreeNM->readDynamicEnergy*((param->trainingEstimation)&&(layerNumber!=0)==true? 2:1);
 		} else {
 			adderTreeCM->CalculateLatency((int)(numInVector/param->numBitInput)*ceil(param->numColMuxed/param->numColPerSynapse), ceil((double) weightMatrixRow/(double) param->numRowSubArray), 0);
@@ -623,8 +625,8 @@ double ProcessingUnitCalculatePerformance(SubArray *subArray, Technology& tech, 
 			*readLatency += adderTreeCM->readLatency;
 			*readLatencyAG += adderTreeCM->readLatency*((param->trainingEstimation)&&(layerNumber!=0)==true? 1:0);
 			*coreLatencyAccum += adderTreeCM->readLatency*((param->trainingEstimation)&&(layerNumber!=0)==true? 2:1);
-			*readDynamicEnergy += adderTreeCM->readDynamicEnergy;
-			*readDynamicEnergyAG += adderTreeCM->readDynamicEnergy*((param->trainingEstimation)&&(layerNumber!=0)==true? 1:0);
+			*readDynamicEnergy += adderTreeCM->readDynamicEnergy* numChannels;
+			*readDynamicEnergyAG += numChannels * adderTreeCM->readDynamicEnergy*((param->trainingEstimation)&&(layerNumber!=0)==true? 1:0);
 			*coreEnergyAccum += adderTreeCM->readDynamicEnergy*((param->trainingEstimation)&&(layerNumber!=0)==true? 2:1);
 		}
 	}
@@ -655,9 +657,9 @@ double ProcessingUnitCalculatePerformance(SubArray *subArray, Technology& tech, 
 		*leakage = subArrayLeakage*numSubArrayRow*numSubArrayCol + adderTreeNM->leakage + bufferInputNM->leakage + bufferOutputNM->leakage;
 		
 		*readLatency += (bufferInputNM->readLatency + bufferOutputNM->readLatency + busInputNM->readLatency + busOutputNM->readLatency);
-		*readDynamicEnergy += (bufferInputNM->readDynamicEnergy + bufferOutputNM->readDynamicEnergy + busInputNM->readDynamicEnergy + busOutputNM->readDynamicEnergy);
+		*readDynamicEnergy += (bufferInputNM->readDynamicEnergy* numChannels + bufferOutputNM->readDynamicEnergy* numChannels + busInputNM->readDynamicEnergy* numChannels + busOutputNM->readDynamicEnergy* numChannels);
 		*readLatencyAG += (bufferInputNM->readLatency + bufferOutputNM->readLatency + busInputNM->readLatency + busOutputNM->readLatency)*((param->trainingEstimation)&&(layerNumber!=0)==true? 1:0);
-		*readDynamicEnergyAG += (bufferInputNM->readDynamicEnergy + bufferOutputNM->readDynamicEnergy + busInputNM->readDynamicEnergy + busOutputNM->readDynamicEnergy)*((param->trainingEstimation)&&(layerNumber!=0)==true? 1:0);
+		*readDynamicEnergyAG += numChannels * (bufferInputNM->readDynamicEnergy + bufferOutputNM->readDynamicEnergy + busInputNM->readDynamicEnergy + busOutputNM->readDynamicEnergy)*((param->trainingEstimation)&&(layerNumber!=0)==true? 1:0);
 		
 		*bufferLatency = (bufferInputNM->readLatency + bufferOutputNM->readLatency)*((param->trainingEstimation)&&(layerNumber!=0)==true? 2:1);
 		*icLatency = (busInputNM->readLatency + busOutputNM->readLatency)*((param->trainingEstimation)&&(layerNumber!=0)==true? 2:1);
@@ -682,9 +684,9 @@ double ProcessingUnitCalculatePerformance(SubArray *subArray, Technology& tech, 
 		*leakage = subArrayLeakage*numSubArrayRow*numSubArrayCol + adderTreeCM->leakage + bufferInputCM->leakage + bufferOutputCM->leakage;
 		
 		*readLatency += (bufferInputCM->readLatency + bufferOutputCM->readLatency + busInputCM->readLatency + busOutputCM->readLatency);
-		*readDynamicEnergy += (bufferInputCM->readDynamicEnergy + bufferOutputCM->readDynamicEnergy + busInputCM->readDynamicEnergy + busOutputCM->readDynamicEnergy);
+		*readDynamicEnergy += (bufferInputCM->readDynamicEnergy* numChannels + bufferOutputCM->readDynamicEnergy* numChannels + busInputCM->readDynamicEnergy* numChannels + busOutputCM->readDynamicEnergy* numChannels);
 		*readLatencyAG += (bufferInputCM->readLatency + bufferOutputCM->readLatency + busInputCM->readLatency + busOutputCM->readLatency)*((param->trainingEstimation)&&(layerNumber!=0)==true? 1:0);
-		*readDynamicEnergyAG += (bufferInputCM->readDynamicEnergy + bufferOutputCM->readDynamicEnergy + busInputCM->readDynamicEnergy + busOutputCM->readDynamicEnergy)*((param->trainingEstimation)&&(layerNumber!=0)==true? 1:0);
+		*readDynamicEnergyAG += numChannels * (bufferInputCM->readDynamicEnergy + bufferOutputCM->readDynamicEnergy + busInputCM->readDynamicEnergy + busOutputCM->readDynamicEnergy)*((param->trainingEstimation)&&(layerNumber!=0)==true? 1:0);
 		
 		*bufferLatency = (bufferInputCM->readLatency + bufferOutputCM->readLatency)*((param->trainingEstimation)&&(layerNumber!=0)==true? 2:1);
 		*icLatency = (busInputCM->readLatency + busOutputCM->readLatency)*((param->trainingEstimation)&&(layerNumber!=0)==true? 2:1);

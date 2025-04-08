@@ -514,7 +514,7 @@ void ChipInitialize(InputParameter& inputParameter, Technology& tech, MemCell& c
 
 
 vector<double> ChipCalculateArea(InputParameter& inputParameter, Technology& tech, MemCell& cell, double desiredNumTileNM, double numPENM, double desiredPESizeNM, double desiredNumTileCM, double desiredTileSizeCM, 
-						double desiredPESizeCM, int numTileRow, double *height, double *width, double *CMTileheight, double *CMTilewidth, double *NMTileheight, double *NMTilewidth) {
+						double desiredPESizeCM, int numTileRow, double *height, double *width, double *CMTileheight, double *CMTilewidth, double *NMTileheight, double *NMTilewidth, int numChannels) {
 	
 	vector<double> areaResults;
 	
@@ -541,7 +541,7 @@ vector<double> ChipCalculateArea(InputParameter& inputParameter, Technology& tec
 	vector<double> areaNMTile;
 	
 	if (param->novelMapping) {
-		areaNMTile = TileCalculateArea(numPENM, desiredPESizeNM, true, &NMheight, &NMwidth);
+		areaNMTile = TileCalculateArea(numPENM, desiredPESizeNM, true, &NMheight, &NMwidth, numChannels);
 		double NMTileArea = areaNMTile[0];
 		double NMTileAreaIC = areaNMTile[1];
 		double NMTileAreaADC = areaNMTile[2];
@@ -558,7 +558,7 @@ vector<double> ChipCalculateArea(InputParameter& inputParameter, Technology& tec
 		*NMTilewidth = NMwidth;
 	}
 	
-	areaCMTile = TileCalculateArea(pow(ceil((double) desiredTileSizeCM/(double) desiredPESizeCM), 2), desiredPESizeCM, false, &CMheight, &CMwidth);
+	areaCMTile = TileCalculateArea(pow(ceil((double) desiredTileSizeCM/(double) desiredPESizeCM), 2), desiredPESizeCM, false, &CMheight, &CMwidth, numChannels);
 	
 	double CMTileArea = areaCMTile[0];
 	double CMTileAreaIC = areaCMTile[1];
@@ -635,7 +635,7 @@ double ChipCalculatePerformance(InputParameter& inputParameter, Technology& tech
 							double *writeLatencyWU, double *writeDynamicEnergyWU, double *bufferLatency, double *bufferDynamicEnergy, double *icLatency, double *icDynamicEnergy, double *coreLatencyADC, 
 							double *coreLatencyAccum, double *coreLatencyOther, double *coreEnergyADC, double *coreEnergyAccum, double *coreEnergyOther, double *dramLatency, double *dramDynamicEnergy,
 							double *readLatencyPeakFW, double *readDynamicEnergyPeakFW, double *readLatencyPeakAG, double *readDynamicEnergyPeakAG, double *readLatencyPeakWG, double *readDynamicEnergyPeakWG,
-							double *writeLatencyPeakWU, double *writeDynamicEnergyPeakWU) {
+							double *writeLatencyPeakWU, double *writeDynamicEnergyPeakWU, int numChannels) {
 	
 	
 	int numRowPerSynapse, numColPerSynapse;
@@ -723,7 +723,7 @@ double ChipCalculatePerformance(InputParameter& inputParameter, Technology& tech
 									&tilebufferLatency, &tilebufferDynamicEnergy, &tileicLatency, &tileicDynamicEnergy, 
 									&tileLatencyADC, &tileLatencyAccum, &tileLatencyOther, &tileEnergyADC, &tileEnergyAccum, &tileEnergyOther, 
 									&tileReadLatencyPeakFW, &tileReadDynamicEnergyPeakFW, &tileReadLatencyPeakAG, &tileReadDynamicEnergyPeakAG,
-									&tileWriteLatencyPeakWU, &tileWriteDynamicEnergyPeakWU);
+									&tileWriteLatencyPeakWU, &tileWriteDynamicEnergyPeakWU, numChannels);
 				
 				*readLatency = MAX(tileReadLatency, (*readLatency));
 				*readDynamicEnergy += tileReadDynamicEnergy;
@@ -855,7 +855,7 @@ double ChipCalculatePerformance(InputParameter& inputParameter, Technology& tech
 									&tilebufferLatency, &tilebufferDynamicEnergy, &tileicLatency, &tileicDynamicEnergy,
 									&tileLatencyADC, &tileLatencyAccum, &tileLatencyOther, &tileEnergyADC, &tileEnergyAccum, &tileEnergyOther, 
 									&tileReadLatencyPeakFW, &tileReadDynamicEnergyPeakFW, &tileReadLatencyPeakAG, &tileReadDynamicEnergyPeakAG,
-									&tileWriteLatencyPeakWU, &tileWriteDynamicEnergyPeakWU);
+									&tileWriteLatencyPeakWU, &tileWriteDynamicEnergyPeakWU, numChannels);
 				
 				*readLatency = MAX(tileReadLatency, (*readLatency));
 				*readDynamicEnergy += tileReadDynamicEnergy;

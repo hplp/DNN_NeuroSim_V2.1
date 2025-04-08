@@ -57,7 +57,7 @@ Param::Param() {
 	operationmode = 2;     		// 1: conventionalSequential (Use several multi-bit RRAM as one synapse)
 								// 2: conventionalParallel (Use several multi-bit RRAM as one synapse)
 	
-	memcelltype = 3;        	// 1: cell.memCellType = Type::SRAM
+	memcelltype = 2;        	// 1: cell.memCellType = Type::SRAM
 								// 2: cell.memCellType = Type::RRAM
 								// 3: cell.memCellType = Type::FeFET
 	
@@ -120,8 +120,8 @@ Param::Param() {
 	// technode: 14      --> wireWidth: 22
 	// technode: 10, 7   --> wireWidth: 14
 	technode = 32;                      // Technology
-	featuresize = 40e-9;                // Wire width for subArray simulation
-	wireWidth = 40;                     // wireWidth of the cell for Accuracy calculation
+	featuresize = 32e-9;                // Wire width for subArray simulation
+	wireWidth = 32;                     // wireWidth of the cell for Accuracy calculation
 	globalBusDelayTolerance = 0.1;      // to relax bus delay for global H-Tree (chip level: communication among tiles), if tolerance is 0.1, the latency will be relax to (1+0.1)*optimalLatency (trade-off with energy)
 	localBusDelayTolerance = 0.1;       // to relax bus delay for global H-Tree (tile level: communication among PEs), if tolerance is 0.1, the latency will be relax to (1+0.1)*optimalLatency (trade-off with energy)
 	treeFoldedRatio = 4;                // the H-Tree is assumed to be able to folding in layout (save area)
@@ -129,14 +129,14 @@ Param::Param() {
 
 	numRowSubArray = 128;               // # of rows in single subArray
 	numColSubArray = 128;               // # of columns in single subArray
-	
+	numChannels = 1;
 	/*** option to relax subArray layout ***/
 	relaxArrayCellHeight = 0;           // relax ArrayCellHeight or not
 	relaxArrayCellWidth = 0;            // relax ArrayCellWidth or not
 	
-	numColMuxed = 8;                    // How many columns share 1 ADC (for eNVM and FeFET) or parallel SRAM
-	levelOutput = 64;                  // # of levels of the multilevelSenseAmp output, should be in 2^N forms; e.g. 32 levels --> 5-bit ADC
-	cellBit = 5;                        // precision of memory device 
+	numColMuxed = 1;                    // How many columns share 1 ADC (for eNVM and FeFET) or parallel SRAM
+	levelOutput = 16;                  // # of levels of the multilevelSenseAmp output, should be in 2^N forms; e.g. 16 levels --> 4-bit ADC
+	cellBit = 1;                        // precision of memory device 
 	
 	/*** parameters for SRAM ***/
 	// due the scaling, suggested SRAM cell size above 22nm: 160F^2
@@ -152,20 +152,20 @@ Param::Param() {
 	
 	/*** parameters for analog synaptic devices ***/
 	heightInFeatureSize1T1R = 4;        // 1T1R Cell height in feature size
-	widthInFeatureSize1T1R = 4;       // 1T1R Cell width in feature size
+	widthInFeatureSize1T1R = 9;       // 1T1R Cell width in feature size
 	heightInFeatureSizeCrossbar = 2;    // Crossbar Cell height in feature size
 	widthInFeatureSizeCrossbar = 2;     // Crossbar Cell width in feature size
 	
-	resistanceOn = 240e3;               // Ron resistance at Vr in the reported measurement data (need to recalculate below if considering the nonlinearity)
-	resistanceOff = 240e3*100;           // Roff resistance at Vr in the reported measurement dat (need to recalculate below if considering the nonlinearity)
+	resistanceOn = 100e3;               // Ron resistance at Vr in the reported measurement data (need to recalculate below if considering the nonlinearity)
+	resistanceOff = 100e3*20;           // Roff resistance at Vr in the reported measurement dat (need to recalculate below if considering the nonlinearity)
 	maxConductance = (double) 1/resistanceOn;
 	minConductance = (double) 1/resistanceOff;
 	gateCapFeFET = 2.1717e-18;	        // Gate capacitance of FeFET (F)
 	polarization = 20;                  // polarization of FeFET (uC/cm^2)
-	maxNumLevelLTP = 60;	            // Maximum number of conductance states during LTP or weight increase
-	maxNumLevelLTD = 60;	            // Maximum number of conductance states during LTD or weight decrease
-	writeVoltage = 4;
-	writePulseWidth = 50e-9;
+	maxNumLevelLTP = 128;	            // Maximum number of conductance states during LTP or weight increase
+	maxNumLevelLTD = 128;	            // Maximum number of conductance states during LTD or weight decrease
+	writeVoltage = 1.5;
+	writePulseWidth = 60e-9;
 	nonlinearIV = false; 				// This option is to consider I-V nonlinearity in cross-point array or not
 	nonlinearity = 10; 					// This is the nonlinearity for the current ratio at Vw and Vw/2
 	
@@ -197,7 +197,7 @@ Param::Param() {
 	numRowMuxedAG = 8;                  // How many columns share 1 ADC (for Transpose array) in transpose subarray (gradient calculation of activation)
 	levelOutputAG = 64;                 // # of levels of the multilevelSenseAmp output, in transpose subarray (gradient calculation of activation)
 	numRowMuxedWG = 8;                  // How many columns share 1 ADC (for Transpose array) in gradient calculation of weight
-	levelOutputWG = 16;                 // # of levels of the multilevelSenseAmp output, in gradient calculation of weight
+	levelOutputWG = 64;                 // # of levels of the multilevelSenseAmp output, in gradient calculation of weight
 
 	dramType = 2;                       // 1: GDDR5
 										// 2: HBM2

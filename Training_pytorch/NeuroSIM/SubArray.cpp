@@ -87,11 +87,12 @@ SubArray::SubArray(InputParameter& _inputParameter, Technology& _tech, MemCell& 
 	readDynamicEnergyArray = writeDynamicEnergyArray = 0;
 }
 
-void SubArray::Initialize(int _numRow, int _numCol, double _unitWireRes){  //initialization module
+void SubArray::Initialize(int _numRow, int _numCol, double _unitWireRes, int _numChannels){  //initialization module
 	
 	numRow = _numRow;    //import parameters
 	numCol = _numCol;
 	unitWireRes = _unitWireRes;
+	numChannels = _numChannels;
 	
 	double MIN_CELL_HEIGHT = MAX_TRANSISTOR_HEIGHT;  //set real layout cell height
 	double MIN_CELL_WIDTH = (MIN_GAP_BET_GATE_POLY + POLY_WIDTH) * 2;  //set real layout cell width

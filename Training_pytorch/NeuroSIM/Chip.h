@@ -51,7 +51,7 @@ void ChipInitialize(InputParameter& inputParameter, Technology& tech, MemCell& c
 					double numPENM, double desiredNumTileNM, double desiredPESizeNM, double desiredNumTileCM, double desiredTileSizeCM, double desiredPESizeCM, int numTileRow, int numTileCol, int *numArrayWriteParallel);
 					
 vector<double> ChipCalculateArea(InputParameter& inputParameter, Technology& tech, MemCell& cell, double desiredNumTileNM, double numPENM, double desiredPESizeNM, double desiredNumTileCM, double desiredTileSizeCM, double desiredPESizeCM, 
-						int numTileRow, double *height, double *width, double *CMTileheight, double *CMTilewidth, double *NMTileheight, double *NMTilewidth);
+						int numTileRow, double *height, double *width, double *CMTileheight, double *CMTilewidth, double *NMTileheight, double *NMTilewidth, int numChannels);
 						
 double ChipCalculatePerformance(InputParameter& inputParameter, Technology& tech, MemCell& cell, int layerNumber, const string &newweightfile, const string &oldweightfile, const string &inputfile, bool followedByMaxPool, const vector<vector<double> > &netStructure, 
 							const vector<int> &markNM, const vector<vector<double> > &numTileEachLayer, const vector<vector<double> > &utilizationEachLayer, const vector<vector<double> > &speedUpEachLayer, 
@@ -61,7 +61,7 @@ double ChipCalculatePerformance(InputParameter& inputParameter, Technology& tech
 							double *bufferLatency, double *bufferDynamicEnergy, double *icLatency, double *icDynamicEnergy,double *coreLatencyADC, double *coreLatencyAccum, 
 							double *coreLatencyOther, double *coreEnergyADC, double *coreEnergyAccum, double *coreEnergyOther, double *dramLatency, double *dramDynamicEnergy,
 							double *readLatencyPeakFW, double *readDynamicEnergyPeakFW, double *readLatencyPeakAG, double *readDynamicEnergyPeakAG, double *readLatencyPeakWG, double *readDynamicEnergyPeakWG,
-							double *writeLatencyPeakWU, double *writeDynamicEnergyPeakWU);
+							double *writeLatencyPeakWU, double *writeDynamicEnergyPeakWU, int numChannels);
 							
 vector<double> TileDesignCM(double tileSize, const vector<int > &markNM, const vector<vector<double> > &netStructure, int numRowPerSynapse, int numColPerSynapse);
 vector<double> TileDesignNM(double peSize, const vector<int > &markNM, const vector<vector<double> > &netStructure, int numRowPerSynapse, int numColPerSynapse, double numPENM);

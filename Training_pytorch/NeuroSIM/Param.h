@@ -68,7 +68,7 @@ public:
 	
 	int neuro, multifunctional, parallelWrite, parallelRead;
 	int numlut, numColMuxed, numWriteColMuxed, levelOutput, avgWeightBit, numBitInput, numRowMuxedAG, levelOutputAG, numRowMuxedWG, levelOutputWG;
-	int numRowSubArray, numColSubArray, numRowSubArrayWG, numColSubArrayWG;
+	int numRowSubArray, numColSubArray, numRowSubArrayWG, numColSubArrayWG, numChannels;
 	int cellBit, synapseBit;
 	int speedUpDegree, dramType, batchSize, numIteration;
 	
